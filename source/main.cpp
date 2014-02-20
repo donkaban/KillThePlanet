@@ -8,24 +8,27 @@ int main()
 {
     try
     {
+        #define W 0.5
         engine q;
-        object o(
+        object::ptr o = std::make_shared<object>(object(
         {
-            { 1, 1, 0,   0, 1,  0, 0, 1},
-            {-1, 1, 0,   0, 0,  0, 0, 1},
-            {-1,-1, 0,   1, 0,  0, 0, 1},
-            { 1,-1, 0,   1, 1,  0, 0, 1},
+            { W, W, 0,   1, 0,  0, 0, 1},
+            {-W, W, 0,   0, 0,  0, 0, 1},
+            {-W,-W, 0,   0, 1,  0, 0, 1},
+            { W,-W, 0,   1, 1,  0, 0, 1},
         },
-        {0, 1, 2, 2, 3, 0}   
-        );
+        {2,3,0,0,1,2}));
 
-
+        material::ptr m1 = std::make_shared<material>("mat1",shaders::vertex_base,shaders::fragment_base);
+        o->setMaterial(m1);
+        q.addObject(o);
+        
 
 
         q.setUpdateHandler([&]()
         {
-            q.setBackColor(vec4(rnd(),rnd(),rnd(),1));
-            logger::info("time: %f", q.getTime());
+            o->setColor(vec(rnd(),rnd(),rnd(),1));
+           // logger::info("time: %f", q.getTime());
         });
 
 

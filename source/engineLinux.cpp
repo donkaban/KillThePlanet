@@ -125,11 +125,9 @@ bool engine::update()
             case MapNotify:
                 logger::info("X11 NATIVE EVENT: MAPPING");
                 glViewport(0, 0, static_cast<GLsizei>(_width), static_cast<GLsizei>(_height));
-                setBackColor(vec4(0, 0, .1, 0));
-                glEnable(GL_CULL_FACE);
+                setBackColor(vec(0, 0, .1, 0));
                 glEnable(GL_DEPTH_TEST);
                 glDepthFunc(GL_LEQUAL); 
-                glCullFace(GL_BACK);    
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             default:
                 break;
@@ -144,6 +142,6 @@ bool engine::update()
     return true;
 }
 
-void engine::setBackColor(const vec4 &c) {glClearColor(c.x, c.y,c.z,c.w);}
+void engine::setBackColor(const vec &c) {glClearColor(c.x, c.y,c.z,c.w);}
 
 #endif

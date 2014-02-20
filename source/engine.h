@@ -31,7 +31,7 @@ public:
     inline void setMouseMoveHandler(const mousehandler_t &hdl)    {onMouseMove=hdl;}
     inline void setUpdateHandler(const updatehandler_t &hdl)      {onUpdate=hdl;}
 
-    void  setBackColor(const vec4 &);
+    void  setBackColor(const vec &);
     float getTime() 
     {
         std::chrono::duration<float> dt(std::chrono::system_clock::now() - _start_time);

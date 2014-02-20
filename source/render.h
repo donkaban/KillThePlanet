@@ -2,6 +2,7 @@
 #define _RENDER_MODULE_
 
 #include "minimath.h"
+#include "utils.h"
 #include <stdexcept>
 
 #include <vector>
@@ -20,7 +21,11 @@
 
 typedef const std::string & strref;   
 
-////////////////////////////////////////////////////////// Vertex     ////////////////////////
+namespace shaders
+{
+    extern std::string vertex_base;
+    extern std::string fragment_base;
+}
 
 struct vertex
 {
@@ -37,14 +42,13 @@ struct vertex
     }   
 };
 
-////////////////////////////////////////////////////////// Material ////////////////////////
 
 class material : public std::enable_shared_from_this<material>
 {
 public: 
     typedef std::shared_ptr<material> ptr;
     typedef const ptr &               ref; 
-    
+  
     material();
     material(strref,strref,strref);
     virtual ~material();
@@ -52,18 +56,13 @@ public:
     void    bind();   
     void    unbind();
     GLuint  getID() const;
-    
-    static ptr get(strref);
 
 private:
     GLuint      id;
     std::string v_shader;
     std::string f_shader;
 
-    static std::unordered_map<std::string,ptr> cache;
 };
-
-////////////////////////////////////////////////////////// Renderable Object ////////////////////////
 
 class object : public std::enable_shared_from_this<object>
 {
@@ -71,21 +70,27 @@ public:
     typedef std::shared_ptr<object> ptr;
     typedef const ptr &       ref; 
 
-    object(const std::vector<vertex> &v, const std::vector<uint16_t> &i);
+    object(const std::vector<vertex> &, const std::vector<uint16_t> &);
     virtual ~object();
    
+    ptr  get() ;
     void bind();     
     void unbind(); 
-    void setMaterial(material::ref m);
-    ptr  get();
-
     virtual void render(); 
+   
+    void setMaterial(material::ref m);
+    void setColor(const vec &c)    {color = c;}
+    void setPosition(const vec &p) {position = p;}
+    void setRotation(const vec &r) {rotation = r;}
     
 private:
     std::vector<vertex>   vertexes;
     std::vector<uint16_t> indecies;        
     material::ptr         mat;
     GLuint                id[2];
+    vec                   color; 
+    vec                   position;
+    vec                   rotation;
 
 };  
 
