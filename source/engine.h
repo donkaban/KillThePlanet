@@ -1,13 +1,12 @@
 #ifndef _ENGINE_MODULE_
 #define _ENGINE_MODULE_
 
+#include "minimath.h"
+#include "render.h"
+
 #include <functional>
 #include <list>
 #include <chrono>
-
-
-#include "minimath.h"
-#include "render.h"
 
 class engine
 {
@@ -32,11 +31,7 @@ public:
     inline void setUpdateHandler(const updatehandler_t &hdl)      {onUpdate=hdl;}
 
     void  setBackColor(const vec &);
-    float getTime() 
-    {
-        std::chrono::duration<float> dt(std::chrono::system_clock::now() - _start_time);
-        return dt.count();
-    }
+   
 
     void addObject(object::ref obj)     {renderQueue.push_back(obj);}
     void removeObject(object::ref obj)  {}// todo!
@@ -52,8 +47,6 @@ private:
 
     unsigned int _width  = 1080/2;
     unsigned int _height = 1920/2;
-    std::chrono::time_point<std::chrono::system_clock> _start_time = std::chrono::system_clock::now();
-   
 };
 
 

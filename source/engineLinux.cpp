@@ -1,10 +1,11 @@
 #ifdef PLATFORM_LINUX
-#include "utils.h"
 
-#include <exception>
+#include "utils.h"
+#include "engine.h"
+
+#include <stdexcept>
 #include <cstring>
 
-#include "engine.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>

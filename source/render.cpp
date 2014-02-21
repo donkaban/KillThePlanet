@@ -2,6 +2,9 @@
 #include "utils.h"
 
 #include <unordered_map> 
+#include <cstdlib>
+#include <stdexcept>
+
 
 static std::unordered_map<GLenum, std::string> ERR_TABLE = 
 {
@@ -76,8 +79,8 @@ material::~material()
 void material::bind()   
 {
     #ifdef PLATFORM_ANDROID
-        v_shader = "#define GLES" + v_shader;
-        f_shader = "#define GLES" + f_shader;
+        v_shader = "precision highp float;\n" + v_shader;
+        f_shader = "precision highp float;\n" + f_shader;
     #endif
 
     id = glCreateProgram(); 
@@ -86,8 +89,9 @@ void material::bind()
     auto fsh = glCreateShader(GL_FRAGMENT_SHADER);  
     if(vsh == 0 || fsh == 0)
         throw std::runtime_error("can't create shader, perhaps GL context not created");
-    const char *v_src = v_shader.c_str();
-    const char *f_src = f_shader.c_str();
+    
+    auto v_src = v_shader.c_str();
+    auto f_src = f_shader.c_str();
     
     glShaderSource(vsh, 1, &v_src, NULL); 
     glShaderSource(fsh, 1, &f_src, NULL); 
@@ -128,37 +132,35 @@ void object::setMaterial(material::ref m) {mat = m;}
 void object::render() 
 {
     if(!mat) return;
+    auto mID = mat->getID();
+        auto p_atr = glGetAttribLocation(mID,"pos");
+        auto t_atr = glGetAttribLocation(mID,"uv");
+        auto n_atr = glGetAttribLocation(mID,"normal");
+        
+        auto c_uni = glGetUniformLocation(mID,"color");
+        auto t_uni = glGetUniformLocation(mID,"transform");
 
-    auto p_ndx = glGetAttribLocation(mat->getID(),"position");
-    auto t_ndx = glGetAttribLocation(mat->getID(),"uv");
-    auto n_ndx = glGetAttribLocation(mat->getID(),"normal");
-    
-    auto c_uni = glGetUniformLocation(mat->getID(),"color");
-    auto p_uni = glGetUniformLocation(mat->getID(),"position");
-    auto r_uni = glGetUniformLocation(mat->getID(),"rotation");
-
-    glUseProgram(mat->getID());
+    glUseProgram(mID);
 
     if(c_uni !=-1) glUniform4f(c_uni, color.r, color.g, color.b, color.a);
-    if(p_uni !=-1) glUniform3f(p_uni, position.x, position.y, position.z);
-    if(r_uni !=-1) glUniform3f(r_uni, rotation.x, rotation.y, rotation.z);
+    if(t_uni !=-1) glUniformMatrix4fv(t_uni, 1,GL_FALSE,transform.data);
 
     glBindBuffer(GL_ARRAY_BUFFER,id[0]);
    
-    if(p_ndx !=-1) 
+    if(p_atr !=-1) 
     {
-        glVertexAttribPointer(p_ndx, 3 ,GL_FLOAT, GL_FALSE, sizeof(vertex), (const void *) 0);
-        glEnableVertexAttribArray(p_ndx);
+        glVertexAttribPointer(p_atr, 3 ,GL_FLOAT, GL_FALSE, sizeof(vertex), reinterpret_cast<const void *>(0));
+        glEnableVertexAttribArray(p_atr);
     }
-    if(t_ndx !=-1) 
+    if(t_atr !=-1) 
     {
-        glVertexAttribPointer(t_ndx, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (const void *) (sizeof(float) * 3));
-        glEnableVertexAttribArray(t_ndx);
+        glVertexAttribPointer(t_atr, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), reinterpret_cast<const void *>(sizeof(float) * 3));
+        glEnableVertexAttribArray(t_atr);
     }
-    if(n_ndx !=-1) 
+    if(n_atr !=-1) 
     {
-        glVertexAttribPointer(n_ndx, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const void *) (sizeof(float) * 5));    
-        glEnableVertexAttribArray(n_ndx);
+        glVertexAttribPointer(n_atr, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), reinterpret_cast<const void *>(sizeof(float) * 5));    
+        glEnableVertexAttribArray(n_atr);
     }
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,id[1]);
     glDrawElements(GL_TRIANGLES, sizeof(indecies)/sizeof(uint16_t),GL_UNSIGNED_SHORT,0); 
@@ -167,11 +169,6 @@ void object::render()
 };
 
 object::ptr object::get() {return this->shared_from_this();}
-
-
-
-
-
 
 
 

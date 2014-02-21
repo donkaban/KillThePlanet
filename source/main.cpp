@@ -27,8 +27,9 @@ int main()
 
         q.setUpdateHandler([&]()
         {
-            o->setColor(vec(rnd(),rnd(),rnd(),1));
-           // logger::info("time: %f", q.getTime());
+            o->setColor({rnd(),rnd(),rnd(),1});
+            o->rotate({0.01,-0.01,0.02});
+            logger::info("time: %f", timer::get());
         });
 
 
