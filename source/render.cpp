@@ -103,6 +103,12 @@ void material::bind()
     glAttachShader(id, fsh);
     glLinkProgram(id); errHandler(id,false);
     getGLError("material::bind");
+    pos  = glGetAttribLocation(id,"pos");
+    uv   = glGetAttribLocation(id,"uv");
+    col  = glGetUniformLocation(id,"color");
+    mv   = glGetUniformLocation(id,"mView");
+    time = glGetUniformLocation(id,"time");
+
 }
 void material::unbind() {}
    
@@ -137,31 +143,17 @@ void object::setMaterial(material::ref m) {mat = m;}
 void object::render() 
 {
     if(!mat) return;
+    glUseProgram(mat->getID());
 
-    auto mID = mat->getID();
-    glUseProgram(mID);
-
-    auto p_atr = glGetAttribLocation(mID,"pos");
-    auto t_atr = glGetAttribLocation(mID,"uv");
-    auto n_atr = glGetAttribLocation(mID,"normal");
-    auto c_uni = glGetUniformLocation(mID,"color");
-    auto t_uni = glGetUniformLocation(mID,"transform");
-    auto x_uni = glGetUniformLocation(mID,"time");
-
-    if(c_uni !=-1) glUniform4f(c_uni, color.r, color.g, color.b, color.a);
-    if(t_uni !=-1) glUniformMatrix4fv(t_uni, 1,GL_FALSE,transform.data);
-    if(x_uni !=-1) glUniform1f(x_uni, timer::get());
+    if(mat->col  !=-1) glUniform4f(mat->col, col.r, col.g, col.b, 1);
+    if(mat->mv   !=-1) glUniformMatrix4fv(mat->mv, 1,GL_FALSE,_transform.data);
+    if(mat->time !=-1) glUniform1f(mat->time, timer::get());
 
     glBindBuffer(GL_ARRAY_BUFFER,id[0]);
-    glVertexAttribPointer(p_atr,3,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(0));
-  
-
-    glVertexAttribPointer(t_atr, 2,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(sizeof(float)*3));
-    glVertexAttribPointer(n_atr, 3,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(sizeof(float)*5));    
-    
-    glEnableVertexAttribArray(p_atr);
-    glEnableVertexAttribArray(t_atr);
-    glEnableVertexAttribArray(n_atr);
+    glVertexAttribPointer(mat->pos,3,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(0));
+    glVertexAttribPointer(mat->uv,2,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(sizeof(float)*3));
+    glEnableVertexAttribArray(mat->pos);
+    glEnableVertexAttribArray(mat->uv);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,id[1]);
     glDrawElements(GL_TRIANGLES, indecies.size(),GL_UNSIGNED_SHORT,0); 
@@ -169,27 +161,15 @@ void object::render()
  
 };
 
-object::ptr object::get() {return this->shared_from_this();}
-void object::setColor(const vec &c) {color = c;}
-vec  object::getColor() const       {return color;}
-void object::rotate(const vec &r)    {transform *= (mat4::rotateX(r.x) * mat4::rotateY(r.y) * mat4::rotateZ(r.z));}
+void object::color(const vec &c)        {col = c;}
+void object::rotate(const vec &r)       {_transform *= mat4::rotate(DEG2RAD *r);}
+void object::translate(const vec &t)    {_transform *= mat4::translate(t);}
+void object::scale(const vec &s)        {_transform *= mat4::scale(s);}
+void object::position(const vec &v)     {_transform.position(v);}  
+vec  object::position() const           {return _transform.position();} 
+void object::transform(const mat4 &t)   {_transform = t;}
+const mat4 & object::transform() const  {return _transform;}
 
-object::ptr object::plane(const vec &dim)
-{
-    float w = dim.x * .5f;
-    float h = dim.y * .5f;
-    object::ptr obj = std::make_shared<object>(object(
-    {
-         w, h, 0,  0, 1 ,  0, 0, 1, 
-        -w, h, 0,  0, 0 ,  0, 0, 1, 
-        -w,-h, 0,  1, 0 ,  0, 0, 1, 
-         w,-h, 0,  1, 1 ,  0, 0, 1
-    },
-    {0,  1,  2,  2,  3,  0}));
-    obj->setMaterial(std::make_shared<material>(shaders::vertex_base,shaders::fragment_base));
-    obj->setColor({rnd(),rnd(),rnd(),1});
-    return obj;
-}
 object::ptr object::cube(const vec &dim)
 {
    float w = dim.x * .5f;
@@ -197,30 +177,12 @@ object::ptr object::cube(const vec &dim)
    float z = dim.z * .5f;
     object::ptr obj = std::make_shared<object>(object(
     {
-        -w, -h, -z,  0, 0,   0,-1, 0, //  0  bottom
-        -w, -h,  z,  0, 1,   0,-1, 0, //  1
-         w, -h,  z,  1, 1,   0,-1, 0, //  2
-         w, -h, -z,  1, 0,   0,-1, 0, //  3
-        -w,  h, -z,  1, 0,   0, 1, 0, //  4  top
-        -w,  h,  z,  1, 1,   0, 1, 0, //  5
-         w,  h,  z,  0, 1,   0, 1, 0, //  6
-         w,  h, -z,  0, 0,   0, 1, 0, //  7
-        -w, -h, -z,  0, 0,   0, 0,-1, //  8  front
-        -w,  h, -z,  0, 1,   0, 0,-1, //  9
-         w,  h, -z,  1, 1,   0, 0,-1, //  10
-         w, -h, -z,  1, 0,   0, 0,-1, //  11
-        -w, -h,  z,  0, 0,   0, 0, 1, //  12  back
-        -w,  h,  z,  0, 1,   0, 0, 1, //  13
-         w,  h,  z,  1, 1,   0, 0, 1, //  14
-         w, -h,  z,  1, 0,   0, 0, 1, //  15
-        -w, -h, -z,  0, 0,  -1, 0, 0, //  16  left
-        -w, -h,  z,  0, 1,  -1, 0, 0, //  17
-        -w,  h,  z,  1, 1,  -1, 0, 0, //  18
-        -w,  h, -z,  1, 0,  -1, 0, 0, //  19
-         w, -h, -z,  0, 0,   1, 0, 0, //  20  right
-         w, -h,  z,  0, 1,   1, 0, 0, //  21
-         w,  h,  z,  1, 1,   1, 0, 0, //  22
-         w,  h, -z,  1, 0,   1, 0, 0, //  23   
+        -w,-h,-z, 0, 0,-w,-h, z, 0, 1, w,-h, z, 1, 1, w,-h,-z, 1, 0,
+        -w, h,-z, 1, 0,-w, h, z, 1, 1, w, h, z, 0, 1, w, h,-z, 0, 0,
+        -w,-h,-z, 0, 0,-w, h,-z, 0, 1, w, h,-z, 1, 1, w,-h,-z, 1, 0,
+        -w,-h, z, 0, 0,-w, h, z, 0, 1, w, h, z, 1, 1, w,-h, z, 1, 0,
+        -w,-h,-z, 0, 0,-w,-h, z, 0, 1,-w, h, z, 1, 1,-w, h,-z, 1, 0, 
+         w,-h,-z, 0, 0, w,-h, z, 0, 1, w, h, z, 1, 1, w, h,-z, 1, 0,    
     },
     {
         0,  2,  1,  0,  3,  2,
@@ -230,68 +192,5 @@ object::ptr object::cube(const vec &dim)
         16, 17, 18, 16, 18, 19,
         20, 23, 22, 20, 22, 21
     }));
-    obj->setMaterial(std::make_shared<material>(shaders::vertex_base,shaders::fragment_base));
     return obj;
 }
-
-object::ptr object::sphere(float r, int slices)
-{
-    std::vector<float>    v;
-    std::vector<uint16_t> n;    
-
-    float step = (TWO_PI) / (static_cast<float>(slices));
-    int   parallels = slices / 2;
-    for (auto i = 0; i < parallels + 1; i++)
-    {
-        for (auto j = 0; j < slices + 1; j++)
-        {
-            auto pos_x = r * std::sin(step * static_cast<float>(i)) * std::sin(step * static_cast<float>(j));
-            auto pos_y = r * std::cos(step * static_cast<float>(i));
-            auto pos_z = r * std::sin(step * static_cast<float>(i)) * std::cos(step * static_cast<float>(j));
-            v.insert(v.end(),{pos_x ,pos_y,pos_z ,
-                         static_cast<float>(j) / static_cast<float>(slices),
-                         static_cast<float>(i) / static_cast<float>(parallels), 
-                         pos_x / r, pos_y / r, pos_z / r});
-        }
-    }    
-    for (auto i = 0; i < slices / 2; i++)
-    {
-        for (auto j = 0; j < slices; j++)
-        {
-            n.push_back((i * (slices + 1) + j));
-            n.push_back(((i + 1) * (slices + 1) + j));
-            n.push_back(((i + 1) * (slices + 1) + (j + 1)));
-            n.push_back((i * (slices + 1) + j));
-            n.push_back(((i + 1) * (slices + 1) + (j + 1)));
-            n.push_back((i * (slices + 1) + (j + 1)));
-        }
-    }
-    object::ptr obj = std::make_shared<object>(v,n);
-    obj->setMaterial(std::make_shared<material>(shaders::vertex_base,shaders::fragment_base));
-    return obj;
-}
-
-object::ptr object::batman(const vec & dim)
-{
-    object::ptr obj = std::make_shared<object>(object(
-    {
-        0.0,-2.5, 0,  1, 0 ,   0, 0, 1,  // 0 
-        2.5,-1.0, 0,  0, .5 ,  0, 0, 1,  // 1
-        1.0, 0.5, 1,  1, .5 , .3, 0, .7, // 2
-        0.5, 2.5, 0,  1, 1 ,   0, 0, 1,  // 3
-       -1.0, 0.5, 1,  1, .5 ,-.3, 0, .7, // 4
-       -2.5,-1.0, 0,  0, .5 ,  0, 0, 1,  // 5
-       -0.5, 2.5, 0,  1, 1 ,   0, 0, 1,  // 6
-    },
-    {0,1,2,2,1,3,0,2,4,4,5,0,6,5,4,}));      
-
-    obj->setMaterial(std::make_shared<material>(shaders::vertex_base,shaders::fragment_base));
-    return obj;
-}
-
-
-
-
-
-
-

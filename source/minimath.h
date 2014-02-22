@@ -29,38 +29,39 @@ struct vec
 public:
     union
     {
-        struct { float x, y, z, w; };
-        struct { float r, g, b, a; };
+        struct {float x, y, z;};
+        struct {float r, g, b;};
         float data[4];
     };
        
-    vec(const float _x = 0, const float _y = 0 ,const float _z = 0, const float _w = 0) : 
-    	x(_x), y(_y),z(_z), w(_w)  
+    vec(const float _x = 0, const float _y = 0 ,const float _z = 0) : 
+    	x(_x), y(_y),z(_z)
+
     {}
     vec(std::initializer_list<float> l) 
     {
         std::memcpy(data,l.begin(),sizeof(data));
     }   
 
-    vec   operator-  () const {return vec(-x,-y,-z,-w);}
-    float operator*  (const vec &a)  const {return x * a.x + y * a.y + z * a.z + w * a.w;}
-    vec   operator*  (const float a) const {return vec( x * a, y * a, z * a, w * a);}
-    vec   operator+  (const vec &a)  const {return vec(x + a.x, y + a.y, z+ a.z, w + a.w);}
-    vec   operator-  (const vec &a)  const {return vec(x - a.x, y - a.y, z- a.z, w - a.w);}
+    vec   operator-  () const {return vec(-x,-y,-z);}
+    float operator*  (const vec &a)  const {return x * a.x + y * a.y + z * a.z;}
+    vec   operator*  (const float a) const {return vec( x * a, y * a, z * a);}
+    vec   operator+  (const vec &a)  const {return vec(x + a.x, y + a.y, z+ a.z);}
+    vec   operator-  (const vec &a)  const {return vec(x - a.x, y - a.y, z- a.z);}
 
-    vec & operator+= (const vec &a)  {x += a.x; y += a.y; z += a.z; w += a.w; return *this;}
-    vec & operator-= (const vec &a)  {x -= a.x; y -= a.y; z -= a.z; w -= a.w; return *this;}
-    vec & operator/= (const vec &a)  {x /= a.x; y /= a.y; z /= a.z; w /= a.w; return *this;}
-    vec & operator*= (const float a) {x *= a; y *= a; z *= a; w *= a; return *this; }
+    vec & operator+= (const vec &a)  {x += a.x; y += a.y; z += a.z; return *this;}
+    vec & operator-= (const vec &a)  {x -= a.x; y -= a.y; z -= a.z; return *this;}
+    vec & operator/= (const vec &a)  {x /= a.x; y /= a.y; z /= a.z; return *this;}
+    vec & operator*= (const float a) {x *= a; y *= a; z *= a; return *this; }
    
     
     bool operator== (const vec &a) const {return compare(a);}
     bool operator!= (const vec &a) const {return !compare(a);}
     
-    bool  compare(const vec &a) const {return ((x == a.x) && (y == a.y) && (z == a.z) && (w == a.w));}
-    float length()  const {return std::sqrt(x * x + y * y + z * z + w * w);}
+    bool  compare(const vec &a) const {return ((x == a.x) && (y == a.y) && (z == a.z));}
+    float length()  const {return std::sqrt(x * x + y * y + z * z);}
     
-    friend vec operator* (const float a, const vec b) {return vec( b.x * a, b.y * a, b.z * a, b.w * a);}
+    friend vec operator* (const float a, const vec b) {return vec( b.x * a, b.y * a, b.z * a);}
 };
 
 struct mat4
@@ -72,10 +73,7 @@ struct mat4
     };
 
     mat4() : mat4({1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1}) {}
-    mat4(std::initializer_list<float> l) 
-    {
-        std::memcpy(data,l.begin(),sizeof(data));
-    }   
+    mat4(std::initializer_list<float> l) {std::memcpy(data,l.begin(),sizeof(data));}   
     
     mat4 operator* (const mat4 &a) const
     {
@@ -87,10 +85,7 @@ struct mat4
         {
             for(int j = 0; j < 4; j++)
             {
-                *ptr = m1[0] * m2[j]
-                    +  m1[1] * m2[j + 4 ]
-                    +  m1[2] * m2[j + 8 ]
-                    +  m1[3] * m2[j + 12];
+                *ptr = m1[0]*m2[j]+m1[1]*m2[j+4]+m1[2]*m2[j+8]+m1[3]*m2[j+12];
                 ptr++;
             }
             m1 += 4;
@@ -102,26 +97,27 @@ struct mat4
         *this = (*this) * a;
         return *this;
     }
-    static mat4 rotateZ(float angle)
+    void position(const vec &v) 
     {
-        auto s = std::sin(angle);
-        auto c = std::cos(angle);
-        return {c,-s,0,0,s,c,0,0,0,0,1,0,0,0,0,1};
+        mat[0][3] = v.x;
+        mat[1][3] = v.y;
+        mat[2][3] = v.z;
     }
-    inline static mat4 rotateX(float angle)
-    {
-        auto s = std::sin(angle);
-        auto c = std::cos(angle);
-        return {1,0,0,0,0,c,-s,0,0,s,c,0,0,0,0,1};
-    }
+    vec position() const {return {mat[0][3],mat[1][3],mat[2][3]};}
 
-    inline static mat4 rotateY(float angle)
+    static mat4 rotate(const vec &v)
     {
-        auto s = std::sin(angle);
-        auto c = std::cos(angle);
-        return {c,0,s,0,0,1,0,0,-s,0,c,0,0,0,0,1};
+        auto sx = std::sin(v.x); auto cx = std::cos(v.x);
+        auto sy = std::sin(v.y); auto cy = std::cos(v.y);
+        auto sz = std::sin(v.z); auto cz = std::cos(v.z);
+        return 
+            mat4({1,0,0,0,0,cx,-sx,0,0,sx,cx,0,0,0,0,1}) *
+            mat4({cy,0,sy,0,0,1,0,0,-sy,0,cy,0,0,0,0,1}) *
+            mat4({cz,-sz,0,0,sz,cz,0,0,0,0,1,0,0,0,0,1}); 
+           
     }
-
+    static mat4 scale(const vec &v)     {return {v.x,0,0,0,0,v.y,0,0,0,0,v.z,0,0,0,0,1};}
+    static mat4 translate(const vec &v) {return {1,0,0,v.x,0,1,0,v.y,0,0,1,v.z,0,0,0,1};}
 
 };
 

@@ -22,7 +22,8 @@ typedef const std::string & strref;
 namespace shaders
 {
     extern std::string vertex_base;
-    extern std::string fragment_base;
+    extern std::string ship;
+    extern std::string bullet;
 }
 
 class material : public std::enable_shared_from_this<material>
@@ -30,6 +31,8 @@ class material : public std::enable_shared_from_this<material>
 public: 
     typedef std::shared_ptr<material> ptr;
     typedef const ptr &               ref; 
+  
+    int pos,uv,time,mv,col; 
   
     material();
     material(strref,strref);
@@ -47,7 +50,7 @@ private:
 
 class object : public std::enable_shared_from_this<object>
 {
-    typedef float vertex[8];
+    typedef float vertex[5];
 
 public: 
     typedef std::shared_ptr<object> ptr;
@@ -56,32 +59,31 @@ public:
     object(const std::vector<float> &, const std::vector<uint16_t> &);
     virtual ~object();
    
-    ptr  get() ;
     void bind();     
     void unbind(); 
-    virtual void render(); 
+    void render(); 
    
     void setMaterial(material::ref m);
     
-    void setColor(const vec &);
-    vec  getColor() const;
+    void color(const vec &);
     void rotate(const vec &);
-
-    static ptr plane(const vec &);
+    void translate(const vec &);
+    void scale(const vec &);
+    void position(const vec &); 
+    vec  position() const ;
+    void transform(const mat4 &); 
+    const mat4 & transform() const ;
+  
     static ptr cube(const vec &);
-    static ptr batman(const vec &);
-
-    static ptr sphere(float, int );
-   
+     
 private:
     GLuint                id[2];
     std::vector<float>    vertexes;
     std::vector<uint16_t> indecies;        
   
     material::ptr         mat;
-    vec                   color = vec({1,1,1,1}); 
-    mat4                  transform; 
-
+    vec                   col = vec({1,1,1,1}); 
+    mat4                  _transform; 
 };  
 
 

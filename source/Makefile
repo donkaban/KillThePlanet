@@ -3,7 +3,7 @@ C_FLAGS=-c -Wall -std=c++11 -DPLATFORM_LINUX -DGL_GLEXT_PROTOTYPES -pthread -fpi
 L_FLAGS=-L/opt/local/lib -lX11 -lGL -lpthread
 
 TARGET=KillTheWorld
-SOURCES=main.cpp engineLinux.cpp aux.cpp render.cpp precompiled.cpp
+SOURCES=main.cpp engine.cpp engineLinux.cpp aux.cpp render.cpp precompiled.cpp
 HEADERS=minimath.h utils.h engine.h render.h
 
 OBJECTS=$(SOURCES:.cpp=.o)

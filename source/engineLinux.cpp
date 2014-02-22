@@ -42,7 +42,7 @@ engine::engine()
     data.visual = XDefaultVisual(data.display, data.screen);
     XWindowAttributes x_attr;
  
-    data.window = XCreateSimpleWindow(data.display,data.root,0,0,_width, _height,0,0,0);
+    data.window = XCreateSimpleWindow(data.display,data.root,0,0,width, height,0,0,0);
     XStoreName(data.display,data.window, "killTHePlanet!");
     XGetWindowAttributes(data.display,DefaultRootWindow(data.display),&x_attr);
     Atom wmEvents[] = 
@@ -71,7 +71,7 @@ engine::engine()
 
 void engine::resize()
 {
-    logger::info("resize to %d x %d",_width, _height);
+    logger::info("resize to %d x %d",width, height);
     XSetWindowAttributes attr; 
     std::memset(&attr,0,sizeof(attr));
     attr.event_mask = StructureNotifyMask|ButtonPressMask|ButtonReleaseMask|Button1MotionMask|KeyPressMask;
@@ -79,7 +79,7 @@ void engine::resize()
 
     XWithdrawWindow(data.display,data.window, data.screen);  
     XChangeWindowAttributes(data.display,data.window,CWBackPixel|CWOverrideRedirect|CWSaveUnder|CWEventMask|CWBorderPixel, &attr);
-    XResizeWindow(data.display,data.window,_width,_height);
+    XResizeWindow(data.display,data.window,width,height);
     XRaiseWindow(data.display, data.window);
     XMapWindow(data.display,data.window);
     XMoveWindow(data.display,data.window,0,0);
@@ -88,7 +88,6 @@ void engine::resize()
 
 bool engine::update()
 {
-
     XEvent evt;
     for (int i = 0; i < XPending(data.display); i++)
     { 
@@ -96,28 +95,9 @@ bool engine::update()
         switch (evt.type)
         {
             case KeyPress:
-            {   
+            {
                 auto event = reinterpret_cast<XKeyEvent *>(&evt);
                 if(onKey) onKey(event->keycode);
-                break;
-            }
-            case ButtonPress:
-            {
-                auto event = reinterpret_cast<XButtonEvent *>(&evt);
-                if(onMousePress)onMousePress(event->x, event->y);
-                XSetInputFocus(data.display, data.window, RevertToNone, CurrentTime);
-                break;
-            }
-            case ButtonRelease: 
-            {
-                auto event = reinterpret_cast<XButtonEvent *>(&evt);
-                if(onMouseRelease) onMouseRelease(event->x, event->y);
-                break;
-            }
-            case MotionNotify:
-            {
-                auto event = reinterpret_cast<XMotionEvent *>(&evt);
-                if(onMousePress) onMousePress(event->x, event->y);
                 break;
             }
             case ClientMessage:
@@ -125,24 +105,15 @@ bool engine::update()
                 return false;
             case MapNotify:
                 logger::info("X11 NATIVE EVENT: MAPPING");
-                glViewport(0, 0, static_cast<GLsizei>(_width), static_cast<GLsizei>(_height));
-                setBackColor(vec(0, .1, .1, 0));
-                glEnable (GL_BLEND);
-                glDepthFunc(GL_LEQUAL); glEnable(GL_DEPTH_TEST);
-                glCullFace(GL_BACK);    glEnable(GL_CULL_FACE);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                _init();
             default:
                 break;
         }
     }
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    if(onUpdate) onUpdate();
-    for(const auto &obj : renderQueue) 
-        obj->render();
+    _update();
     glXSwapBuffers(data.display,data.window);
     return true;
 }
 
-void engine::setBackColor(const vec &c) {glClearColor(c.x, c.y,c.z,c.w);}
 
 #endif
