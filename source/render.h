@@ -25,22 +25,6 @@ namespace shaders
     extern std::string fragment_base;
 }
 
-struct vertex
-{
-    union
-    {
-        struct {float position[3],texcoord[2],normal[3];};
-        float data[8];
-    };
-    inline const float * ptr() const {return data;}
-    inline       float * ptr()       {return data;}
-    vertex(std::initializer_list<float> l) 
-    {
-        std::memcpy(data,l.begin(),sizeof(vertex));
-    }   
-};
-
-
 class material : public std::enable_shared_from_this<material>
 {
 public: 
@@ -48,7 +32,7 @@ public:
     typedef const ptr &               ref; 
   
     material();
-    material(strref,strref,strref);
+    material(strref,strref);
     virtual ~material();
 
     void    bind();   
@@ -63,11 +47,13 @@ private:
 
 class object : public std::enable_shared_from_this<object>
 {
+    typedef float vertex[8];
+
 public: 
     typedef std::shared_ptr<object> ptr;
     typedef const ptr &             ref; 
 
-    object(const std::vector<vertex> &, const std::vector<uint16_t> &);
+    object(const std::vector<float> &, const std::vector<uint16_t> &);
     virtual ~object();
    
     ptr  get() ;
@@ -77,18 +63,23 @@ public:
    
     void setMaterial(material::ref m);
     
-    void setColor(const vec &c) {color = c;}
-    vec  getColor() const       {return color;}
-    
-    void rotate(const vec &r)    {transform *= (mat4::rotateX(r.x) * mat4::rotateY(r.y) * mat4::rotateZ(r.z));}
+    void setColor(const vec &);
+    vec  getColor() const;
+    void rotate(const vec &);
 
+    static ptr plane(const vec &);
+    static ptr cube(const vec &);
+    static ptr batman(const vec &);
+
+    static ptr sphere(float, int );
+   
 private:
     GLuint                id[2];
-    std::vector<vertex>   vertexes;
+    std::vector<float>    vertexes;
     std::vector<uint16_t> indecies;        
   
     material::ptr         mat;
-    vec                   color; 
+    vec                   color = vec({1,1,1,1}); 
     mat4                  transform; 
 
 };  

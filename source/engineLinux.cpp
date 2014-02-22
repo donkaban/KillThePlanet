@@ -126,15 +126,15 @@ bool engine::update()
             case MapNotify:
                 logger::info("X11 NATIVE EVENT: MAPPING");
                 glViewport(0, 0, static_cast<GLsizei>(_width), static_cast<GLsizei>(_height));
-                setBackColor(vec(0, 0, .1, 0));
-                glEnable(GL_DEPTH_TEST);
-                glDepthFunc(GL_LEQUAL); 
+                setBackColor(vec(0, .1, .1, 0));
+                glEnable (GL_BLEND);
+                glDepthFunc(GL_LEQUAL); glEnable(GL_DEPTH_TEST);
+                glCullFace(GL_BACK);    glEnable(GL_CULL_FACE);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             default:
                 break;
         }
     }
-    std::lock_guard<std::mutex> lock(aux::globalLocker);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     if(onUpdate) onUpdate();
     for(const auto &obj : renderQueue) 

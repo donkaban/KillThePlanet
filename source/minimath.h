@@ -7,6 +7,14 @@
  
 extern float rnd();
 
+const float PI        = 3.141592654;
+const float TWO_PI    = 2.0f * PI;
+const float HALF_PI   = 0.5f * PI;
+const float SQRT_TWO  = 1.41421356237309504880f;
+const float DEG2RAD   = PI/180.0;
+const float RAD2DEG   = 180.0/PI;
+
+
 template<typename T> bool between(const T &v, const T &v0, const T &v1)
 {
     return (v >= v0 && v <= v1);

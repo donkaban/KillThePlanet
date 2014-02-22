@@ -10,28 +10,38 @@ int main()
     {
         #define W 0.5
         engine q;
-        object::ptr o = std::make_shared<object>(object(
-        {
-            { W, W, 0,   1, 0,  0, 0, 1},
-            {-W, W, 0,   0, 0,  0, 0, 1},
-            {-W,-W, 0,   0, 1,  0, 0, 1},
-            { W,-W, 0,   1, 1,  0, 0, 1},
-        },
-        {2,3,0,0,1,2}));
-
-        material::ptr m1 = std::make_shared<material>("mat1",shaders::vertex_base,shaders::fragment_base);
-        o->setMaterial(m1);
-        q.addObject(o);
         
+        auto bat = object::batman({3,3,3});
+         auto cube   = object::cube({3.1,3.1,3.1});
+         auto center = object::cube({3,3,3});
 
-
+         //q.addObject(center);
+        // q.addObject(cube);
+         q.addObject(bat);
+      
+        //cube->rotate  ({3,3,0.01});
+          
         q.setUpdateHandler([&]()
         {
-            o->setColor({rnd(),rnd(),rnd(),1});
-            o->rotate({0.01,-0.01,0.02});
-            logger::info("time: %f", timer::get());
+            bat->setColor({rnd(),rnd(),rnd(),.5});
+            cube->rotate  ({0.01,0.01,0.01});
+            center->rotate({0.01,-0.01,0.01});
+           // logger::info("time: %f", timer::get());
         });
 
+        #define R 0.3
+        q.setKeyHandler([&](int key){
+            switch(key)
+            {
+                case 131 : bat->rotate({ 0, 0, -R}); break;
+                case 132 : bat->rotate({ 0, 0,  R}); break;
+                case 133 : bat->rotate({ R, 0, 0}); break;
+                case 134 : bat->rotate({-R, 0, 0}); break;
+            }
+
+
+
+        });
 
 
 
