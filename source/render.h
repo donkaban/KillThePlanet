@@ -26,12 +26,12 @@ namespace shaders
     extern std::string bullet;
 }
 
-class material : public std::enable_shared_from_this<material>
+class material 
 {
 public: 
     typedef std::shared_ptr<material> ptr;
     typedef const ptr &               ref; 
-  
+
     int pos,uv,time,mv,col; 
   
     material();
@@ -48,7 +48,7 @@ private:
     std::string f_shader;
 };
 
-class object : public std::enable_shared_from_this<object>
+class object 
 {
     typedef float vertex[5];
 
@@ -65,25 +65,26 @@ public:
    
     void setMaterial(material::ref m);
     
-    void color(const vec &);
-    void rotate(const vec &);
-    void translate(const vec &);
-    void scale(const vec &);
-    void position(const vec &); 
-    vec  position() const ;
-    void transform(const mat4 &); 
-    const mat4 & transform() const ;
+    void color(vec::ref);
+    void rotate(vec::ref);
+    void translate(vec::ref);
+    void scale(vec::ref);
+    void position(vec::ref); 
+    void transform(mat::ref); 
+   
+    vec      position()  const;
+    mat::ref transform() const;
   
-    static ptr cube(const vec &);
+    static ptr cube(vec::ref);
      
 private:
     GLuint                id[2];
     std::vector<float>    vertexes;
     std::vector<uint16_t> indecies;        
   
-    material::ptr         mat;
-    vec                   col = vec({1,1,1,1}); 
-    mat4                  _transform; 
+    material::ptr _material;
+    vec           _color = vec({1,1,1,1}); 
+    mat           _transform; 
 };  
 
 

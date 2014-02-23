@@ -6,65 +6,30 @@
 #include <cstdlib>
 #include <stdexcept>
 
-
-static std::unordered_map<GLenum, std::string> ERR_TABLE = 
+static void check(strref where = "somethere over the rainbow...")
 {
-    {GL_INVALID_ENUM,       "GL_INVALID_ENUM"},
-    {GL_INVALID_VALUE,      "GL_INVALID_VALUE"},
-    {GL_INVALID_OPERATION,  "GL_INVALID_OPERATION"},
-    {GL_OUT_OF_MEMORY,      "GL_OUT_OF_MEMORY"},
-    {GL_INVALID_FRAMEBUFFER_OPERATION, "GL_INVALID_FRAMEBUFFER_OPERATION"},
-}; 
-static void getGLError(strref where)
-{
-    auto error = glGetError();
-    if(error !=GL_NO_ERROR)
-    {
-        if(ERR_TABLE.find(error) != ERR_TABLE.end())
-            logger::error("OpenGL error [%s]: %s", where.c_str(),ERR_TABLE[error].c_str());
-        else 
-            logger::error("Unknown OpenGL error [%s]: %d", where.c_str(),error);
-        exit(-1); // fatality!
-    } 
-        
+    if(GL_NO_ERROR != glGetError())
+        throw std::runtime_error("OpenGL error in " + where);
 }
-static void errHandler(int id, bool shader) // :todo global common GL error handler
+static void check(int id)
 {
     int compiled = 0;
-    if (shader)  glGetShaderiv (static_cast<GLuint>(id), GL_COMPILE_STATUS, &compiled);
-    else         glGetProgramiv(static_cast<GLuint>(id), GL_LINK_STATUS,    &compiled);
+    glGetShaderiv (static_cast<GLuint>(id), GL_COMPILE_STATUS, &compiled);
     if (!compiled)
     {
-        GLint message_len;
-        std::string errorMessage;
-        if (shader) 
-        {            
-            logger::error("compile shader problem! len : %d", message_len);    
-            glGetShaderiv (static_cast<GLuint>(id), GL_INFO_LOG_LENGTH, &message_len);
-        }
-        else        
-        { 
-            logger::error("ink programm problem! len : %d", message_len);    
-            glGetProgramiv(static_cast<GLuint>(id), GL_INFO_LOG_LENGTH, &message_len);
-        }
-        if (message_len > 1)
+        GLint       lenght;
+        std::string message;
+        glGetShaderiv (static_cast<GLuint>(id), GL_INFO_LOG_LENGTH, &lenght);
+        if (lenght > 1)
         {
-            errorMessage.resize(static_cast<size_t>(message_len));
-            if (shader)
-            {
-                glGetShaderInfoLog(id, message_len, NULL, &errorMessage[0]);
-                glDeleteShader (id);
-            }
-            else
-            {
-                glGetProgramInfoLog(id, message_len, NULL, &errorMessage[0]);
-                glDeleteProgram(id);
-            }
-            logger::error("[%s] material create: %s ",__FILE__,errorMessage.c_str());
+            message.resize(static_cast<size_t>(lenght));
+            glGetShaderInfoLog(id, lenght, NULL, &message[0]);
+            glDeleteShader (id);
+            throw std::runtime_error("can't compile shader: "+ message);
         }
     }
-   
 }
+
 
 
 material::material() {}
@@ -96,19 +61,18 @@ void material::bind()
     
     glShaderSource(vsh, 1, &v_src, NULL); 
     glShaderSource(fsh, 1, &f_src, NULL); 
-    glCompileShader(vsh); errHandler(vsh, true);
-    glCompileShader(fsh); errHandler(fsh, true);
+    glCompileShader(vsh); check(vsh);
+    glCompileShader(fsh); check(fsh);
   
     glAttachShader(id, vsh);
     glAttachShader(id, fsh);
-    glLinkProgram(id); errHandler(id,false);
-    getGLError("material::bind");
+    glLinkProgram(id); 
     pos  = glGetAttribLocation(id,"pos");
     uv   = glGetAttribLocation(id,"uv");
     col  = glGetUniformLocation(id,"color");
     mv   = glGetUniformLocation(id,"mView");
     time = glGetUniformLocation(id,"time");
-
+    check("material::bind");
 }
 void material::unbind() {}
    
@@ -130,47 +94,47 @@ void object::bind()
     glBufferData(GL_ARRAY_BUFFER, vertexes.size() * sizeof(float) , &vertexes[0], GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,id[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indecies.size() * sizeof(uint16_t), &indecies[0], GL_STATIC_DRAW);
-    getGLError("object::bind");
+    check("object::bind");
 }
 void object::unbind() 
 {
     glDeleteBuffers(2,id);
-    getGLError("object::unbind");
+    check("object::unbind");
 } 
 
-void object::setMaterial(material::ref m) {mat = m;}
+void object::setMaterial(material::ref m) {_material = m;}
 
 void object::render() 
 {
-    if(!mat) return;
-    glUseProgram(mat->getID());
+    if(!_material) {logger::error("try render without material. its stupid."); return;}
+    glUseProgram(_material->getID());
 
-    if(mat->col  !=-1) glUniform4f(mat->col, col.r, col.g, col.b, 1);
-    if(mat->mv   !=-1) glUniformMatrix4fv(mat->mv, 1,GL_FALSE,_transform.data);
-    if(mat->time !=-1) glUniform1f(mat->time, timer::get());
+    if(_material->col  !=-1) glUniform4f(_material->col, _color.r, _color.g, _color.b, 1);
+    if(_material->mv   !=-1) glUniformMatrix4fv(_material->mv, 1,GL_FALSE,_transform.data);
+    if(_material->time !=-1) glUniform1f(_material->time, timer::get());
 
     glBindBuffer(GL_ARRAY_BUFFER,id[0]);
-    glVertexAttribPointer(mat->pos,3,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(0));
-    glVertexAttribPointer(mat->uv,2,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(sizeof(float)*3));
-    glEnableVertexAttribArray(mat->pos);
-    glEnableVertexAttribArray(mat->uv);
+    glVertexAttribPointer(_material->pos,3,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(0));
+    glVertexAttribPointer(_material->uv, 2,GL_FLOAT,GL_FALSE,sizeof(vertex),reinterpret_cast<const void *>(sizeof(float)*3));
+    glEnableVertexAttribArray(_material->pos);
+    glEnableVertexAttribArray(_material->uv);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,id[1]);
     glDrawElements(GL_TRIANGLES, indecies.size(),GL_UNSIGNED_SHORT,0); 
-    getGLError("object::render");
- 
+    check("object::render");
 };
 
-void object::color(const vec &c)        {col = c;}
-void object::rotate(const vec &r)       {_transform *= mat4::rotate(DEG2RAD *r);}
-void object::translate(const vec &t)    {_transform *= mat4::translate(t);}
-void object::scale(const vec &s)        {_transform *= mat4::scale(s);}
-void object::position(const vec &v)     {_transform.position(v);}  
-vec  object::position() const           {return _transform.position();} 
-void object::transform(const mat4 &t)   {_transform = t;}
-const mat4 & object::transform() const  {return _transform;}
+void object::color(vec::ref c)     {_color = c;}
+void object::rotate(vec::ref r)    {_transform *= mat::rotate(DEG2RAD *r);}
+void object::translate(vec::ref t) {_transform *= mat::translate(t);}
+void object::scale(vec::ref s)     {_transform *= mat::scale(s);}
+void object::position(vec::ref v)  {_transform.position(v);}  
+void object::transform(mat::ref t) {_transform = t;}
 
-object::ptr object::cube(const vec &dim)
+vec      object::position()  const  {return _transform.position();} 
+mat::ref object::transform() const  {return _transform;}
+
+object::ptr object::cube(vec::ref dim)
 {
    float w = dim.x * .5f;
    float h = dim.y * .5f;

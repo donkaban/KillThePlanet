@@ -10,8 +10,8 @@
 class engine
 {
 public:
-    typedef std::function<void(float)>      updatehandler_t;
-    typedef std::function<void(int)>        keyhandler_t;
+    typedef std::function<void(float)> updatehandler_t;
+    typedef std::function<void(int)>   keyhandler_t;
     enum KEY 
     {
         LEFT  = 131,
@@ -29,8 +29,8 @@ public:
     bool update();
     void resize();
 
-    inline void setKeyHandler(const keyhandler_t &hdl)            {onKey=hdl;}
-    inline void setUpdateHandler(const updatehandler_t &hdl)      {onUpdate=hdl;}
+    void setKeyHandler(const keyhandler_t &hdl)       {onKey=hdl;}
+    void setUpdateHandler(const updatehandler_t &hdl) {onUpdate=hdl;}
    
     void addObject(object::ref obj)     {renderQueue.push_back(obj);}
     void removeObject(object::ref obj)  {}// todo!

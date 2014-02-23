@@ -24,7 +24,7 @@ protected:
 class bullet : public entity
 {
 public:
-    bullet(engine &e, const mat4 &t, float speed) : 
+    bullet(engine &e, mat::ref t, float speed) : 
         entity(e), 
         speed(speed)
     {
@@ -32,7 +32,7 @@ public:
         {0,-.3,0,.5,.5,.3,-.5,0,1,1,0,.5,0,.5,0,-.3,-.5, 0,0,1},
         {0,1,2,2,3,0}));    
         model->setMaterial(std::make_shared<material>(shaders::vertex_base,shaders::bullet));    
-        model->transform(t * mat4::translate({0,2,0}) * mat4::scale({1,1,1}));
+        model->transform(t * mat::translate({0,2,0}) * mat::scale({1,1,1}));
         e.addObject(model);
     }
     virtual ~bullet() {e.removeObject(model);}
@@ -61,8 +61,8 @@ public:
         model->setMaterial(std::make_shared<material>(shaders::vertex_base,shaders::ship));
         e.addObject(model);
     };
-    void left()  {angle =  const_angle;};
-    void right() {angle = -const_angle;}
+    void left()  {angle = const_angle;};
+    void right() {angle =-const_angle;}
     void move()  {accel = const_accel;}
     void brake() {accel = 0;}
     void shoot()
@@ -89,25 +89,22 @@ private:
 
 
 
-
 #ifdef PLATFORM_LINUX
-
 int main()
 {
     try
     {
         engine  q;
         ship    player(q);
-                 
+                
         q.setUpdateHandler([&](float dt)
         {
             player.update(dt);
             logger::info("distance : %f", player.distance({0,0,0}));
-       
         });
 
-        q.setKeyHandler([&](int key){
-          
+        q.setKeyHandler([&](int key)
+        {
             switch(key)
             {
                 case engine::KEY::LEFT  : player.left();  break;
@@ -115,13 +112,8 @@ int main()
                 case engine::KEY::DOWN  : player.brake(); break;
                 case engine::KEY::UP    : player.move();  break;
                 case engine::KEY::SPACE : player.shoot(); break;
-
             }
-
-
-
         });
-
         while(q.update()) {}
     }
     catch(std::exception e)
