@@ -1,8 +1,9 @@
 #include "game.h"
 
-std::shared_ptr<ship> game::player;
-std::list<bullet *>   game::bullets;
-std::list<enemy  *>   game::enemys;
+std::shared_ptr<object> game::background;
+std::shared_ptr<ship>   game::player;
+std::list<bullet *>     game::bullets;
+std::list<enemy  *>     game::enemys;
 
 void game::start()
 {
@@ -16,6 +17,12 @@ void game::start()
         enemys.push_back(new enemy(rnd(.2,.6),{x,y,0},{rnd(-.3,.3),rnd(-.3,.3),0})); 
         phi+=0.5;
     }
+    background = std::make_shared<object>(object(
+        {1,1,0,1,0,1,-1,0,1,1,-1,-1,0,0,1,-1,1,0,0,0},
+        {2,1,0,3,2,0},
+        engine::getMaterial("back")));
+        background->translate({0,0,-30});
+        background->scale({9,16,0});
 }
 
 
@@ -30,9 +37,9 @@ bool entity::bounder(mat &t)
     return ret;
 } 
 enemy::enemy(float size, vec::ref p, vec::ref v) : 
-    object({1,1,1,.5,0,1,1,-1,1,0,-1,1,-1,.5,0,-1,1,1,0,0,-1,-1,1,0,1,1,-1,1,0,0.5,1,-1,-1,1,1,-1,-1,-1,0,0.5},
-           {0,1,2,2,3,0,7,6,5,5,4,7,3,4,5,5,0,3,2,1,6,6,7,2,6,1,0,0,5,6,7,4,3,3,2,7},
-           engine::getMaterial("bullet")),
+    object({0,-1,0,0,0,0,0,1,1,0,1,0,-1, 0,1,-1,0,-1,1,1,0,1,0,0,0},
+           {2,1,0,3,2,0,0,1,3,3,1,4,4,1,2,2,3,4},
+           engine::getMaterial("enemy")),
     size(size)
 
 {
@@ -72,7 +79,7 @@ bullet::~bullet() {}
 bool bullet::update(float dt) 
 {
     render();
-    translate({0,dt *(20),0});
+    translate({0,dt *(24),0});
     for(auto i = game::enemys.begin(); i!= game::enemys.end();i++)
     {
         auto dir = (*i)->position() - pos;
