@@ -19,13 +19,6 @@
 
 typedef const std::string & strref;   
 
-namespace shaders
-{
-    extern std::string vertex_base;
-    extern std::string ship;
-    extern std::string bullet;
-}
-
 class material 
 {
 public: 
@@ -50,21 +43,20 @@ private:
 
 class object 
 {
-    typedef float vertex[5];
+    typedef float vertex[5]; // position[3] + texture_coord[2]
 
 public: 
     typedef std::shared_ptr<object> ptr;
     typedef const ptr &             ref; 
 
-    object(const std::vector<float> &, const std::vector<uint16_t> &);
+    object(const std::vector<float> &, const std::vector<uint16_t> &, material::ref);
     virtual ~object();
    
     void bind();     
     void unbind(); 
     void render(); 
    
-    void setMaterial(material::ref m);
-    
+    void material(material::ref);
     void color(vec::ref);
     void rotate(vec::ref);
     void translate(vec::ref);
@@ -74,17 +66,17 @@ public:
    
     vec      position()  const;
     mat::ref transform() const;
-  
-    static ptr cube(vec::ref);
-     
+
+protected:
+    material::ptr _material;
+    vec           _color = vec({1,1,1,1}); 
+    mat           _transform; 
+
 private:
     GLuint                id[2];
     std::vector<float>    vertexes;
     std::vector<uint16_t> indecies;        
-  
-    material::ptr _material;
-    vec           _color = vec({1,1,1,1}); 
-    mat           _transform; 
+
 };  
 
 

@@ -15,10 +15,6 @@
     #define  _ERR(...)  printf("[err] "); printf(__VA_ARGS__); printf("\n");
 #endif 
 
-struct aux
-{
-	static std::mutex globalLocker;
-};
 
 struct logger
 {
@@ -41,5 +37,20 @@ public:
     }
 
 };
+
+template <typename T>
+static void updater(T & queue, float dt)
+{
+    for (auto i = queue.begin(); i != queue.end();)
+    {
+        if((*i)->update(dt)) 
+        {   
+            delete *i;
+            i = queue.erase(i);
+        }
+        else i++;
+    }   
+}        
+
 
 #endif

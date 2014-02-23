@@ -6,6 +6,7 @@
 #include <initializer_list>
  
 extern float rnd();
+extern float rnd(float, float);
 
 const float PI        = 3.141592654;
 const float TWO_PI    = 2.0f * PI;

@@ -68,9 +68,9 @@ engine::engine()
     glXMakeCurrent(data.display, data.window, data.context);
     resize();
 }
-
 void engine::resize()
 {
+    _init();
     logger::info("resize to %d x %d",width, height);
     XSetWindowAttributes attr; 
     std::memset(&attr,0,sizeof(attr));

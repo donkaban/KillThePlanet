@@ -5,20 +5,22 @@
 #include "render.h"
 
 #include <functional>
-#include <list>
+#include <unordered_map>
 
 class engine
 {
 public:
-    typedef std::function<void(float)> updatehandler_t;
-    typedef std::function<void(int)>   keyhandler_t;
+    typedef std::function<void(float)> updHdl;
+    typedef std::function<void(int)>   keyHdl;
+    
     enum KEY 
     {
         LEFT  = 131,
         RIGHT = 132,
         DOWN  = 133,
         UP    = 134,
-        SPACE = 57 
+        SPACE = 57,
+        ESC   = 61, 
     };    
     engine();
     ~engine();
@@ -26,26 +28,24 @@ public:
     engine(const engine &) = delete;
     engine & operator = (const engine &) = delete;
 
-    bool update();
-    void resize();
+    static material::ptr getMaterial(const std::string &key) {return materials[key];}
 
-    void setKeyHandler(const keyhandler_t &hdl)       {onKey=hdl;}
-    void setUpdateHandler(const updatehandler_t &hdl) {onUpdate=hdl;}
-   
-    void addObject(object::ref obj)     {renderQueue.push_back(obj);}
-    void removeObject(object::ref obj)  {}// todo!
+    void setKeyHandler(const keyHdl &hdl)       {onKey=hdl;}
+    void setUpdateHandler(const updHdl &hdl) {onUpdate=hdl;}
+    void mainLoop() {while(update()) {} }
 private:
-
     void _init();
     void _update();
-
-    std::list<object::ptr> renderQueue;
-   
-    updatehandler_t onUpdate        = updatehandler_t();
-    keyhandler_t    onKey           = keyhandler_t();
+    bool update();
+    void resize();
+    
+    updHdl onUpdate = updHdl();
+    keyHdl    onKey = keyHdl();
     unsigned int width  = 1080/2;
     unsigned int height = 1920/2;
     float deltaTime = 0;
+    static std::unordered_map<std::string, material::ptr> materials;
+  
 };
 
 
