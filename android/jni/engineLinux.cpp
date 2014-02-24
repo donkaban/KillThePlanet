@@ -32,7 +32,7 @@ engine::~engine()
 
 engine::engine()
 {
-    logger::info("create X11 native window");
+    NFO("create X11 native window");
     data.display = XOpenDisplay(NULL);
     if (!data.display) 
         throw std::runtime_error("can't open X11 display");
@@ -66,12 +66,12 @@ engine::engine()
     if(!data.context)
         throw std::runtime_error("[GLX] unable to create window context");
     glXMakeCurrent(data.display, data.window, data.context);
-    resize();
+    resize(width,height);
 }
-void engine::resize()
+void engine::resize(int w, int h)
 {
     _init();
-    logger::info("resize to %d x %d",width, height);
+    NFO("resize to %d x %d",width, height);
     XSetWindowAttributes attr; 
     std::memset(&attr,0,sizeof(attr));
     attr.event_mask = StructureNotifyMask|ButtonPressMask|ButtonReleaseMask|Button1MotionMask|KeyPressMask;
@@ -101,10 +101,10 @@ bool engine::update()
                 break;
             }
             case ClientMessage:
-                logger::info("X11 NATIVE EVENT: QUIT");
+                NFO("X11 NATIVE EVENT: QUIT");
                 return false;
             case MapNotify:
-                logger::info("X11 NATIVE EVENT: MAPPING");
+                NFO("X11 NATIVE EVENT: MAPPING");
                 _init();
             default:
                 break;

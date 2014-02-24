@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root">
+
+    <android.opengl.GLSurfaceView android:id="@+id/glview"
+                                  android:layout_width="match_parent"
+                                  android:layout_height="match_parent"
+
+                                  android:layout_alignParentEnd="false"
+        />
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/button2"
+        android:onClick="onBrake"
+        android:text="@string/brake" />
+
+
+    <Button
+        android:id="@+id/button5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button1"
+        android:layout_alignLeft="@+id/button1"
+        android:onClick="onAccel"
+        android:text="@string/accel" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignTop="@+id/button5"
+        android:layout_marginTop="20dp"
+        android:onClick="onLeft"
+        android:text="@string/_turn" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button2"
+        android:layout_alignBottom="@+id/button2"
+        android:layout_toRightOf="@+id/button1"
+        android:onClick="onRight"
+        android:text="@string/turn_" />
+
+    <Button
+        android:id="@+id/button4"
+        style="android:buttonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button3"
+        android:layout_alignBottom="@+id/button3"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/button3"
+        android:onClick="onFire"
+        android:text="@string/fire_" />
+
+</RelativeLayout>

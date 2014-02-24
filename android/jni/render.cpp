@@ -25,12 +25,10 @@ static void check(int id)
             message.resize(static_cast<size_t>(lenght));
             glGetShaderInfoLog(id, lenght, NULL, &message[0]);
             glDeleteShader (id);
-            throw std::runtime_error("can't compile shader: "+ message);
+            ERR("can't compile shader: %s",message.c_str());
         }
     }
 }
-
-
 
 material::material() {}
 material::material(strref vsh, strref fsh) : 
@@ -107,7 +105,7 @@ void object::material(material::ref m) {_material = m;}
 
 void object::render() 
 {
-    if(!_material) {logger::error("try render without material. its stupid."); return;}
+    if(!_material) return;// {ERR("try render without material. its stupid."); return;}
     glUseProgram(_material->getID());
 
     if(_material->col  !=-1) glUniform4f(_material->col, _color.r, _color.g, _color.b, 1);

@@ -43,6 +43,7 @@ enemy::enemy(float size, vec::ref p, vec::ref v) :
     size(size)
 
 {
+    NFO("create enemy");
     pos = p;
     position(pos);
     rot = vec({rnd(-45,45),rnd(-45,45),rnd(-45,45)});
@@ -73,6 +74,7 @@ bullet::bullet(mat::ref t) :
     object({0,-.3,0,.5,.5,.3,-.5,0,1,1,0,.5,0,.5,0,-.3,-.5, 0,0,1},
            {0,1,2,2,3,0},engine::getMaterial("bullet"))
 {
+    NFO("create bullet");
     transform(t * mat::translate({0,2,0}) * mat::scale({1,1,1}));
 }
 bullet::~bullet() {}
@@ -98,7 +100,7 @@ ship::ship() :
     object({0,-2.5,0,1,0,2.5,-1,0,0,.5,1,.5,1,1,.5,.5,2.5,0,1,1,-1,.5,1,1,.5,-2.5,-1,0,0,.5,-.5,2.5,0,1,1},
            {0,1,2,2,1,3,0,2,4,4,5,0,6,5,4,}, engine::getMaterial("ship"))
 {   
-    logger::info("create ship");
+    NFO("create ship");
     scale({.2,.2,.2});
 }
 

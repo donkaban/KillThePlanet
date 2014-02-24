@@ -36,7 +36,7 @@ int main()
     }
     catch(std::exception e)
     {
-        logger::error("error : %s",e.what());
+        ERR("error : %s",e.what());
     }
 
 

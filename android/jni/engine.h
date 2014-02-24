@@ -33,11 +33,12 @@ public:
     void setKeyHandler(const keyHdl &hdl)       {onKey=hdl;}
     void setUpdateHandler(const updHdl &hdl) {onUpdate=hdl;}
     void mainLoop() {while(update()) {} }
+    bool update();
+    void resize(int,int);
+  
 private:
     void _init();
     void _update();
-    bool update();
-    void resize();
     
     updHdl onUpdate = updHdl();
     keyHdl    onKey = keyHdl();
