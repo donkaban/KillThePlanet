@@ -10,6 +10,12 @@ void game::start()
     float phi = 0.0;
     enemys.clear();
     player = std::make_shared<ship>();
+    background = std::make_shared<object>(object(
+        {1,1,0,1,0,1,-1,0,1,1,-1,-1,0,0,1,-1,1,0,0,0},
+        {2,1,0,3,2,0},
+        engine::getMaterial("back")));
+    background->translate({0,0,-30});
+    background->scale({9,16,0});
     for(auto i = 0; i< 12; i++)
     { 
         float x = 3 * sin(phi);
@@ -17,12 +23,6 @@ void game::start()
         enemys.push_back(new enemy(rnd(.2,.6),{x,y,0},{rnd(-.3,.3),rnd(-.3,.3),0})); 
         phi+=0.5;
     }
-    background = std::make_shared<object>(object(
-        {1,1,0,1,0,1,-1,0,1,1,-1,-1,0,0,1,-1,1,0,0,0},
-        {2,1,0,3,2,0},
-        engine::getMaterial("back")));
-        background->translate({0,0,-30});
-        background->scale({9,16,0});
 }
 
 
@@ -36,19 +36,23 @@ bool entity::bounder(mat &t)
     if(pos.x < -scrH || pos.x > scrH) {pos.x = -pos.x; ret=true;}    
     return ret;
 } 
-enemy::enemy(float size, vec::ref p, vec::ref v) : 
+
+
+enemy::enemy(float size, vec::ref p, vec::ref v) :  
     object({0,-1,0,0,0,0,0,1,1,0,1,0,-1, 0,1,-1,0,-1,1,1,0,1,0,0,0},
            {2,1,0,3,2,0,0,1,3,3,1,4,4,1,2,2,3,4},
-           engine::getMaterial("enemy")),
+            engine::getMaterial("enemy")),
     size(size)
 
 {
-    NFO("create enemy");
+
     pos = p;
     position(pos);
     rot = vec({rnd(-45,45),rnd(-45,45),rnd(-45,45)});
     scale({size,size,size});
     vel = vec({rnd(-.3,.3),rnd(-.3,.3),0});
+    NFO("create enemy in [%0.1f:%0.1f] size: %0.1f", pos.x, pos.y,size);
+
 }
 void enemy::spawn()
 {

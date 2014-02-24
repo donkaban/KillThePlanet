@@ -83,6 +83,14 @@ object::object(const std::vector<float> &v, const std::vector<uint16_t> &ndx, ma
 {
     bind();
 }
+object::object(object::ref o)
+{
+    id[0] = o->id0();
+    id[1] = o->id1();
+    _material  = o->material();
+    _transform = o->transform();
+}
+
 object::~object() {};
    
 void object::bind()     
@@ -101,12 +109,14 @@ void object::unbind()
 } 
 
 void object::material(material::ref m) {_material = m;}
+material::ptr object::material() const {return _material;}
+GLuint object::id0() const {return id[0];}
+GLuint object::id1() const {return id[1];}
 
 void object::render() 
 {
-    if(!_material) return;// {ERR("try render without material. its stupid."); return;}
+    if(!_material) {ERR("try render without material. its stupid."); return;}
     glUseProgram(_material->getID());
-
     if(_material->mv   !=-1) glUniformMatrix4fv(_material->mv, 1,GL_FALSE,_transform.data);
     if(_material->time !=-1) glUniform1f(_material->time, timer::get());
 

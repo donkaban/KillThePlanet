@@ -50,6 +50,7 @@ public:
     typedef const ptr &             ref; 
 
     object(const std::vector<float> &, const std::vector<uint16_t> &, material::ref);
+    object(object::ref);
     virtual ~object();
    
     void bind();     
@@ -66,6 +67,9 @@ public:
     vec      position()  const;
     mat::ref transform() const;
 
+    material::ptr material() const;
+    GLuint id0() const;
+    GLuint id1() const;
 protected:
     material::ptr _material;
     mat           _transform; 

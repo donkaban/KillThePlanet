@@ -10,7 +10,7 @@ class enemy;
 
 struct  game
 {
-    static std::shared_ptr<object> background;
+    static object::ptr background;
     static std::shared_ptr<ship> player;
     static std::list<bullet *>   bullets;
     static std::list<enemy  *>   enemys;

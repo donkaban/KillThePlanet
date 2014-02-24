@@ -103,9 +103,6 @@ bool engine::update()
             case ClientMessage:
                 NFO("X11 NATIVE EVENT: QUIT");
                 return false;
-            case MapNotify:
-                NFO("X11 NATIVE EVENT: MAPPING");
-                _init();
             default:
                 break;
         }
