@@ -25,7 +25,7 @@ public:
     typedef std::shared_ptr<material> ptr;
     typedef const ptr &               ref; 
 
-    int pos,uv,time,mv,col; 
+    int pos,uv,time,mv; 
   
     material();
     material(strref,strref);
@@ -57,7 +57,6 @@ public:
     void render(); 
    
     void material(material::ref);
-    void color(vec::ref);
     void rotate(vec::ref);
     void translate(vec::ref);
     void scale(vec::ref);
@@ -69,7 +68,6 @@ public:
 
 protected:
     material::ptr _material;
-    vec           _color = vec({1,1,1,1}); 
     mat           _transform; 
 
 private:

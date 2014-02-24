@@ -67,7 +67,6 @@ void material::bind()
     glLinkProgram(id); 
     pos  = glGetAttribLocation(id,"pos");
     uv   = glGetAttribLocation(id,"uv");
-    col  = glGetUniformLocation(id,"color");
     mv   = glGetUniformLocation(id,"mView");
     time = glGetUniformLocation(id,"time");
     check("material::bind");
@@ -108,7 +107,6 @@ void object::render()
     if(!_material) return;// {ERR("try render without material. its stupid."); return;}
     glUseProgram(_material->getID());
 
-    if(_material->col  !=-1) glUniform4f(_material->col, _color.r, _color.g, _color.b, 1);
     if(_material->mv   !=-1) glUniformMatrix4fv(_material->mv, 1,GL_FALSE,_transform.data);
     if(_material->time !=-1) glUniform1f(_material->time, timer::get());
 
@@ -123,7 +121,6 @@ void object::render()
     check("object::render");
 };
 
-void object::color(vec::ref c)     {_color = c;}
 void object::rotate(vec::ref r)    {_transform *= mat::rotate(DEG2RAD *r);}
 void object::translate(vec::ref t) {_transform *= mat::translate(t);}
 void object::scale(vec::ref s)     {_transform *= mat::scale(s);}

@@ -16,7 +16,6 @@ void main()
 })";
 
 std::string ship = R"(
-uniform vec4 color;
 uniform float time; 
 varying vec2 v_uv;
 
@@ -32,17 +31,13 @@ void main()
 
 
 std::string bullet = R"(
-uniform vec4 color;
-uniform float time; 
 varying vec2 v_uv;
-
 void main() 
 {
-    gl_FragColor = color;
+    gl_FragColor = vec4(1,1,1,1);
 })";
 
 std::string back = R"(
-uniform vec4 color;
 uniform float time; 
 varying vec2 v_uv;
 void main() 
@@ -52,42 +47,23 @@ void main()
 })";
 
 std::string enemy = R"(
-uniform vec4 color;
 uniform float time; 
 varying vec2 v_uv;
-
-vec4 rnd(vec2 uv)
+float rand(vec3 v)
 {
-    uv = floor(fract(uv)*1e3);
-    float v = uv.x+uv.y*1e3;
-    return fract(1e5*sin(vec4(v*1e-2, (v+1.)*1e-2, (v+1e3)*1e-2, (v+1e3+1.)*1e-2)));
+    return fract(sin(dot(v*0.123,vec3(12.9898,78.233,112.166))) * 43758.5453);
 }
- 
-float noise(vec2 p) 
+float fbm(vec3 v) 
 {
-    vec2 f = fract(p*1e3);
-    vec4 r = rnd(p);
-    f = f*f*(3.0-2.0*f);
-    return (mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y));  
-}
-float col(vec2 p) 
-{
-    float v = 0.0;
-    v += 1.-abs(pow(noise(p)-0.5,0.75))*1.7;
-    return v;
+    float n = 0.0;
+    n += 0.5000 * rand(v); v *= 2.1;
+    n += 0.2500 * rand(v); v *= 2.1;
+    
+    return n;
 }
 void main() 
 {
-    vec2 p = v_uv *.02 +.05;
-    float c1 = col(p*.3+time*.0015);
-    float c2 = col(p*.3-time*.0015);
-    
-    float c3 = col(p*.2-time*.0015);
-    float c4 = col(p*.2+time*.0015);
-    
-    float cf = pow(c1*c2*c3*c4+0.5,6.);
-    
-    vec3 c = vec3(cf);
-    gl_FragColor = vec4(c+vec3(0.2,0.2,.6), 1.);
+    float color = fbm(vec3(v_uv,0.0));
+    gl_FragColor = vec4(color,color,color,1.0);
 })";
 }
