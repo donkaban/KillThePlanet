@@ -13,7 +13,7 @@ public:
     typedef std::function<void(float)> updHdl;
     typedef std::function<void(int)>   keyHdl;
     
-    enum KEY 
+    enum KEY // macos keyboard codes!!! in linux use another!
     {
         LEFT  = 131,
         RIGHT = 132,
