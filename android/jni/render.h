@@ -68,8 +68,8 @@ public:
     mat::ref transform() const;
 
     material::ptr material() const;
-    GLuint id0() const;
-    GLuint id1() const;
+    GLuint id0() const; // deprecated
+    GLuint id1() const; // deprecated
 protected:
     material::ptr _material;
     mat           _transform; 
