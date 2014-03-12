@@ -34,7 +34,7 @@ int main()
         });
        e.mainLoop();
     }
-    catch(std::exception e)
+    catch(const std::exception &e)
     {
         ERR("error : %s",e.what());
     }
