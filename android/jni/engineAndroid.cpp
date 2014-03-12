@@ -19,7 +19,7 @@ Java_com_kaban_asteroids_Game_init(JNIEnv *env, jobject obj)
     {
         e = new engine();
     } 
-    catch(std::exception e)
+    catch(const std::exception &e)
     {
         ERR("[jni] init : %s", e.what());
     }
